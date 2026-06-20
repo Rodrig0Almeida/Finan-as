@@ -382,6 +382,128 @@ body {
 }
 .tab.active { color: var(--vault); background: rgba(31,58,46,0.07); }
 .tab svg { width: 20px; height: 20px; }
+.tab.hidden-tab { display: none; }
+
+/* ================================================================
+   TOGGLE SWITCH (settings)
+   ================================================================ */
+.switch-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 12px 2px;
+}
+.switch-row-text { flex: 1; min-width: 0; }
+.switch-row-title { font-weight: 700; font-size: var(--text-md); }
+.switch-row-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+.switch {
+  position: relative;
+  width: 46px; height: 27px; min-width: 46px;
+  border-radius: var(--r-full);
+  background: rgba(42,36,32,0.18);
+  cursor: pointer;
+  transition: background 0.18s ease;
+}
+.switch::after {
+  content: '';
+  position: absolute; top: 2.5px; left: 2.5px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 0.18s ease;
+}
+.switch.on { background: var(--vault-light); }
+.switch.on::after { transform: translateX(19px); }
+
+/* ================================================================
+   PROFILE PHOTO UPLOAD (settings)
+   ================================================================ */
+.photo-row { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.photo-avatar {
+  width: 56px; height: 56px; min-width: 56px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: var(--text-lg);
+  color: #fff;
+  background: var(--vault-light);
+  background-size: cover; background-position: center;
+  overflow: hidden;
+  position: relative;
+}
+.photo-row.b .photo-avatar { background: var(--terracotta-light); }
+.photo-actions { flex: 1; min-width: 0; }
+.photo-actions-name { font-weight: 700; font-size: var(--text-md); margin-bottom: 6px; }
+.photo-btn-row { display: flex; gap: 8px; }
+.photo-btn {
+  font-size: 11.5px; font-weight: 700;
+  padding: 6px 12px;
+  border-radius: var(--r-full);
+  border: 1.5px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+  color: var(--vault-2);
+}
+.photo-btn.danger { color: var(--terracotta); }
+
+/* ================================================================
+   MONTH PICKER (calendar)
+   ================================================================ */
+.month-nav-label { cursor: pointer; }
+.month-picker-year {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.month-picker-year-label { font-family: 'Fraunces', serif; font-weight: 600; font-size: var(--text-xl); }
+.month-picker-year-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--cream-2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.month-picker-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.month-picker-cell {
+  padding: 14px 4px;
+  text-align: center;
+  border-radius: var(--r-md);
+  background: var(--cream-2);
+  font-weight: 600; font-size: var(--text-sm);
+  text-transform: capitalize;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+}
+.month-picker-cell.is-current { border-color: var(--brass); }
+.month-picker-cell.is-selected { background: var(--vault); color: #fff; }
+
+/* ================================================================
+   STATS / CHARTS
+   ================================================================ */
+.stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+.stat-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-card-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 6px; }
+.stat-card-value { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; }
+.chart-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 16px 14px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 18px;
+}
+.chart-box-title { font-weight: 700; font-size: var(--text-md); margin-bottom: 4px; }
+.chart-box-sub { font-size: 11px; color: var(--text-muted); margin-bottom: 14px; }
+.chart-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; font-size: 11px; color: var(--text-muted); }
+.chart-legend-item { display: flex; align-items: center; gap: 5px; }
+.chart-legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.stats-empty { text-align: center; padding: 50px 20px; color: var(--text-muted); font-size: 13px; }
 
 /* ================================================================
    FAB
@@ -1322,7 +1444,7 @@ body {
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none"><path d="M15 18l-6-6 6-6" stroke="#1F3A2E" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
       <div>
-        <div class="month-nav-label" id="monthLabel">Junho 2026</div>
+        <div class="month-nav-label" id="monthLabel" onclick="openMonthPicker()">Junho 2026</div>
         <div class="month-nav-hint" id="monthHint"></div>
       </div>
       <div class="month-nav-btn" onclick="changeMonth(1)">
@@ -1436,6 +1558,28 @@ body {
       </div>
     </div>
 
+    <div class="section-head" style="margin-top:6px;"><div class="section-title">Foto de perfil</div></div>
+    <div class="photo-row a">
+      <div class="photo-avatar" id="photoAvatarA">A</div>
+      <div class="photo-actions">
+        <div class="photo-actions-name" id="photoNameA">Pessoa A</div>
+        <div class="photo-btn-row">
+          <label class="photo-btn">Alterar foto<input type="file" accept="image/*" style="display:none;" onchange="handlePhotoChange('A', this)" /></label>
+          <div class="photo-btn danger" onclick="removePhoto('A')">Remover</div>
+        </div>
+      </div>
+    </div>
+    <div class="photo-row b">
+      <div class="photo-avatar" id="photoAvatarB">B</div>
+      <div class="photo-actions">
+        <div class="photo-actions-name" id="photoNameB">Pessoa B</div>
+        <div class="photo-btn-row">
+          <label class="photo-btn">Alterar foto<input type="file" accept="image/*" style="display:none;" onchange="handlePhotoChange('B', this)" /></label>
+          <div class="photo-btn danger" onclick="removePhoto('B')">Remover</div>
+        </div>
+      </div>
+    </div>
+
     <div class="field" style="margin-top:6px;">
       <label>Nome da pessoa A</label>
       <input type="text" id="nameA" placeholder="ex: Rodrigo" oninput="saveNames()" />
@@ -1443,6 +1587,15 @@ body {
     <div class="field">
       <label>Nome da pessoa B</label>
       <input type="text" id="nameB" placeholder="ex: Jacqueline" oninput="saveNames()" />
+    </div>
+
+    <div class="section-head" style="margin-top:20px;"><div class="section-title">Aparência</div></div>
+    <div class="switch-row">
+      <div class="switch-row-text">
+        <div class="switch-row-title">Aba Estatísticas</div>
+        <div class="switch-row-sub">Mostra uma aba extra com gráficos sobre renda, gastos, cofres e empréstimos.</div>
+      </div>
+      <div class="switch" id="statsToggle" onclick="toggleStatsTab()"></div>
     </div>
 
     <div class="field" style="margin-top:20px;">
@@ -1454,6 +1607,23 @@ body {
     </div>
 
     <button class="delete-all-btn" onclick="confirmResetAll()">Apagar todos os dados</button>
+  </div>
+
+  <!-- ===================== ESTATÍSTICAS ===================== -->
+  <div class="screen" id="screen-stats">
+    <div class="topbar">
+      <div class="screen-title-group">
+        <div class="screen-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#F6EFE2" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="screen-title">Estatísticas</div>
+      </div>
+      <div class="sync-pill" id="syncPill-stats" onclick="loadAll()" title="Toque para sincronizar agora">
+        <span class="sync-dot" id="syncDot-stats"></span>
+        <span id="syncStatus-stats">sincronizando</span>
+      </div>
+    </div>
+    <div id="statsContent"></div>
   </div>
 
   <div class="loading" id="loadingState">Abrindo os cofres…</div>
@@ -1481,6 +1651,10 @@ body {
     <div class="tab" id="tabLoans" onclick="goLoans()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM16 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M2 21v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 4.5 2.8M14.5 17.8A5 5 0 0 1 19 15h0a5 5 0 0 1 5 5v1" stroke-linecap="round"/></svg>
       Empréstimos
+    </div>
+    <div class="tab hidden-tab" id="tabStats" onclick="goStats()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 3 5-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Estatísticas
     </div>
     <div class="tab" id="tabSettings" onclick="goSettings()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.6 1z"/></svg>
@@ -1526,13 +1700,14 @@ const EMOJIS = ['🏦','🚗','💼','🏠','✈️','🎓','💍','🐶','🏥'
 let bills = [];
 let monthData = {};
 let currentMonthKey = defaultReferenceMonthKey();
+let appSettings = { showStats: false }; // { showStats, photoA, photoB } — synced via cloud like everything else
 
 // --- Cloud sync (Google Sheets / Apps Script) ---
 let syncUrl = '';                 // configured in Settings, local-only, never sent to the cloud
 let syncPushTimer = null;         // debounce timer for outgoing pushes
 const SYNC_DEBOUNCE_MS = 2000;    // wait 2s after the last edit before pushing
-const SYNC_KEYS = ['vaults','txns','loans','bills','monthData','names']; // keys that trigger a cloud push
-const SYNC_PILL_SCREENS = ['home','month','feira','loans','settings']; // every screen now shows its own sync pill
+const SYNC_KEYS = ['vaults','txns','loans','bills','monthData','names','appSettings']; // keys that trigger a cloud push
+const SYNC_PILL_SCREENS = ['home','month','feira','loans','settings','stats']; // every screen now shows its own sync pill
 const MONEY_SOURCES = [
   { key:'fisico', label:'Dinheiro físico', emoji:'💵' },
   { key:'vale',   label:'Vale-alimentação', emoji:'🍽️' },
@@ -1628,6 +1803,7 @@ async function loadFromLocalStorage(){
   try{ const n  = await window.storage.get('names');     names     = n  ? JSON.parse(n.value)  : { a:'Rodrigo', b:'Jacqueline' }; }catch(e){}
   try{ const b  = await window.storage.get('bills');     bills     = b  ? JSON.parse(b.value)  : []; }catch(e){}
   try{ const md = await window.storage.get('monthData'); monthData = md ? JSON.parse(md.value) : {}; }catch(e){}
+  try{ const st = await window.storage.get('appSettings'); appSettings = st ? JSON.parse(st.value) : { showStats:false }; }catch(e){ appSettings = { showStats:false }; }
 }
 
 // Applies a JSON payload received from the Google Sheets / Apps Script endpoint.
@@ -1638,6 +1814,7 @@ function applyCloudData(data){
   bills     = Array.isArray(data.bills)     ? data.bills     : [];
   monthData = (data.monthData && typeof data.monthData === 'object') ? data.monthData : {};
   names     = (data.names && typeof data.names === 'object') ? data.names : { a:'', b:'' };
+  appSettings = (data.appSettings && typeof data.appSettings === 'object') ? data.appSettings : { showStats:false };
   // "who" is intentionally left untouched: it's a per-device setting, not synced.
 }
 
@@ -1650,6 +1827,7 @@ async function persistLocalOnlySilently(){
   try{ await window.storage.set('bills',     JSON.stringify(bills));     }catch(e){}
   try{ await window.storage.set('monthData', JSON.stringify(monthData));}catch(e){}
   try{ await window.storage.set('names',     JSON.stringify(names));     }catch(e){}
+  try{ await window.storage.set('appSettings', JSON.stringify(appSettings)); }catch(e){}
 }
 
 function showLoadingState(msg){
@@ -1686,6 +1864,7 @@ async function loadAll(){
     setSyncStatus('nolink');
   }
 
+  applyTabVisibility();
   hideLoadingState();
   renderAll();
   renderMonth();
@@ -1698,6 +1877,7 @@ async function persistNames()     { await safeSet('names',     names);     }
 async function persistWho()       { await safeSet('who',       who);       }
 async function persistBills()     { await safeSet('bills',     bills);     }
 async function persistMonthData() { await safeSet('monthData', monthData); }
+async function persistAppSettings() { await safeSet('appSettings', appSettings); }
 
 // Saves locally (instant, works offline) and, for cloud-synced keys,
 // schedules a debounced push of the FULL dataset to the Google Sheets URL.
@@ -1729,7 +1909,7 @@ function scheduleCloudPush(){
 async function pushToCloud(){
   if(!syncUrl) return;
   // The sync URL itself is NEVER included in the payload sent to the cloud.
-  const payload = { vaults, txns, loans, bills, monthData, names };
+  const payload = { vaults, txns, loans, bills, monthData, names, appSettings };
   try{
     await fetch(syncUrl, {
       method: 'POST',
@@ -1763,7 +1943,7 @@ function setSyncStatus(state){
 // ---------------------------------------------------------------
 // NAVIGATION
 // ---------------------------------------------------------------
-const TABS = ['tabHome','tabMonth','tabFeira','tabLoans','tabSettings'];
+const TABS = ['tabHome','tabMonth','tabFeira','tabLoans','tabStats','tabSettings'];
 
 function activateTab(id){
   TABS.forEach(t => document.getElementById(t).classList.toggle('active', t === id));
@@ -1784,6 +1964,10 @@ function goSettings(){
   showScreen('screen-settings'); activateTab('tabSettings');
   document.getElementById('fab').style.display = 'none'; renderSettings();
 }
+function goStats(){
+  showScreen('screen-stats'); activateTab('tabStats');
+  document.getElementById('fab').style.display = 'none'; renderStats();
+}
 function goFeira(){
   showScreen('screen-feira'); activateTab('tabFeira');
   document.getElementById('fab').style.display = 'none'; renderFeira();
@@ -1791,6 +1975,22 @@ function goFeira(){
 function goLoans(){
   showScreen('screen-loans'); activateTab('tabLoans');
   document.getElementById('fab').style.display = 'none'; renderLoans();
+}
+// Shows/hides the Estatísticas tab according to the saved setting.
+// If it gets turned off while the user is looking at it, send them back to Mês.
+function applyTabVisibility(){
+  const show = !!(appSettings && appSettings.showStats);
+  const tab = document.getElementById('tabStats');
+  tab.classList.toggle('hidden-tab', !show);
+  if(!show && document.getElementById('screen-stats').classList.contains('active')){
+    goMonth();
+  }
+}
+async function toggleStatsTab(){
+  appSettings.showStats = !appSettings.showStats;
+  await persistAppSettings();
+  applyTabVisibility();
+  renderSettings();
 }
 function openVault(id){
   currentVaultId = id; showScreen('screen-detail'); activateTab(null);
@@ -1946,6 +2146,72 @@ function renderSettings(){
   document.getElementById('nameA').value = names.a || '';
   document.getElementById('nameB').value = names.b || '';
   document.getElementById('syncUrl').value = syncUrl || '';
+  document.getElementById('photoNameA').textContent = names.a || 'Pessoa A';
+  document.getElementById('photoNameB').textContent = names.b || 'Pessoa B';
+  renderPhotoAvatar('A');
+  renderPhotoAvatar('B');
+  const toggle = document.getElementById('statsToggle');
+  if(toggle) toggle.classList.toggle('on', !!(appSettings && appSettings.showStats));
+}
+function renderPhotoAvatar(person){
+  const el = document.getElementById('photoAvatar' + person);
+  if(!el) return;
+  const photo = names['photo' + person];
+  if(photo){
+    el.style.backgroundImage = `url(${photo})`;
+    el.textContent = '';
+  } else {
+    el.style.backgroundImage = '';
+    const label = person === 'A' ? (names.a || 'Pessoa A') : (names.b || 'Pessoa B');
+    el.textContent = (label.trim().charAt(0) || person).toUpperCase();
+  }
+}
+// Reads the chosen image, downsizes it to a small square thumbnail and
+// stores it as a base64 data URL inside `names` — so it travels through
+// the exact same Google Sheets sync as everything else in the app.
+async function handlePhotoChange(person, inputEl){
+  const file = inputEl.files && inputEl.files[0];
+  if(!file) return;
+  if(!file.type || !file.type.startsWith('image/')){ showToast('Selecione um arquivo de imagem.'); inputEl.value=''; return; }
+  try{
+    const dataUrl = await resizeImageToDataUrl(file, 160);
+    names['photo' + person] = dataUrl;
+    await persistNames();
+    renderPhotoAvatar(person);
+    showToast('Foto atualizada');
+  }catch(e){
+    showToast('Não foi possível processar a imagem.');
+  } finally {
+    inputEl.value = '';
+  }
+}
+async function removePhoto(person){
+  delete names['photo' + person];
+  await persistNames();
+  renderPhotoAvatar(person);
+  showToast('Foto removida');
+}
+function resizeImageToDataUrl(file, maxSize){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Falha ao ler arquivo'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+      img.onload = () => {
+        let { width, height } = img;
+        const scale = Math.min(1, maxSize / Math.max(width, height));
+        width = Math.max(1, Math.round(width * scale));
+        height = Math.max(1, Math.round(height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.75));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 async function setWho(w){ who = w; await persistWho(); renderSettings(); showToast('Agora você é ' + whoLabel(w)); }
 let nameSaveTimer = null;
@@ -1953,7 +2219,7 @@ function saveNames(){
   names.a = document.getElementById('nameA').value;
   names.b = document.getElementById('nameB').value;
   clearTimeout(nameSaveTimer);
-  nameSaveTimer = setTimeout(()=> persistNames(), 500);
+  nameSaveTimer = setTimeout(()=> { persistNames(); renderPhotoAvatar('A'); renderPhotoAvatar('B'); }, 500);
 }
 
 // Saves the Google Sheets sync URL LOCALLY ONLY (localStorage). This value
@@ -1973,6 +2239,110 @@ async function confirmResetAll(){
   vaults = []; txns = []; loans = []; bills = []; monthData = {};
   await persistVaults(); await persistTxns(); await persistLoans(); await persistBills(); await persistMonthData();
   showToast('Tudo apagado'); goHome();
+}
+
+// ---------------------------------------------------------------
+// STATS / CHARTS
+// ---------------------------------------------------------------
+function lastNMonthKeys(n){
+  return Object.keys(monthData).sort().slice(-n);
+}
+function monthShortLabel(key){
+  const [y,m] = key.split('-').map(Number);
+  return new Date(y, m-1, 1).toLocaleDateString('pt-BR', { month:'short' }).replace('.','');
+}
+function chartBoxWrap(title, sub, inner){
+  return `<div class="chart-box">
+    <div class="chart-box-title">${escapeHtml(title)}</div>
+    <div class="chart-box-sub">${escapeHtml(sub)}</div>
+    ${inner}
+  </div>`;
+}
+// Small dependency-free grouped bar chart rendered as inline SVG.
+function groupedBarSVG(labels, series){
+  const w = 300, h = 170, padBottom = 22, padTop = 10, padLeft = 2;
+  const maxVal = Math.max(1, ...series.flatMap(s => s.values));
+  const n = Math.max(1, labels.length);
+  const groupWidth = (w - padLeft) / n;
+  const barGap = 3;
+  const barWidth = Math.max(2, (groupWidth - barGap * (series.length + 1)) / series.length);
+  let bars = '';
+  labels.forEach((label, i) => {
+    const groupX = padLeft + i * groupWidth;
+    series.forEach((s, si) => {
+      const val = s.values[i] || 0;
+      const barH = (val / maxVal) * (h - padBottom - padTop);
+      const x = groupX + barGap + si * (barWidth + barGap);
+      const y = h - padBottom - barH;
+      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barWidth.toFixed(1)}" height="${Math.max(0,barH).toFixed(1)}" rx="3" fill="${s.color}"></rect>`;
+    });
+    const labelX = groupX + groupWidth / 2;
+    bars += `<text x="${labelX.toFixed(1)}" y="${h - 6}" font-size="9" text-anchor="middle" fill="rgba(42,36,32,0.5)">${escapeHtml(label)}</text>`;
+  });
+  const legend = series.map(s => `<div class="chart-legend-item"><span class="chart-legend-dot" style="background:${s.color};"></span>${escapeHtml(s.name)}</div>`).join('');
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:100%; height:auto; display:block;">${bars}</svg><div class="chart-legend">${legend}</div>`;
+}
+// Simple horizontal proportion bars (no external lib needed).
+function horizontalBarsHTML(items){
+  const maxVal = Math.max(1, ...items.map(it => Math.abs(it.value)));
+  return items.map(it => {
+    const pct = Math.max(2, Math.round((Math.abs(it.value) / maxVal) * 100));
+    return `
+      <div style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; gap:8px; font-size:12px; margin-bottom:5px;">
+          <span style="font-weight:600;">${escapeHtml(it.label)}</span>
+          <span style="color:var(--text-muted); white-space:nowrap;">${fmt(it.value)}</span>
+        </div>
+        <div style="background:var(--cream-2); border-radius:100px; height:9px; overflow:hidden;">
+          <div style="width:${pct}%; height:100%; border-radius:100px; background:${it.color};"></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+function renderStats(){
+  const box = document.getElementById('statsContent');
+  if(!box) return;
+  const monthKeys = lastNMonthKeys(6);
+  if(vaults.length === 0 && monthKeys.length === 0 && loans.length === 0){
+    box.innerHTML = '<div class="stats-empty">Ainda não há dados suficientes para mostrar estatísticas. Use o app por um tempo e volte aqui 📊</div>';
+    return;
+  }
+
+  const totalSaved      = vaults.reduce((s,v) => s + (v.balance||0), 0);
+  const openLoansTotal  = loans.filter(l => l.remaining > 0).reduce((s,l) => s + l.remaining, 0);
+  const totalPaidLoans  = loans.reduce((s,l) => s + (l.total - l.remaining), 0);
+
+  let html = `<div class="stat-cards">
+    <div class="stat-card"><div class="stat-card-label">Guardado nos cofres</div><div class="stat-card-value">${fmt(totalSaved)}</div></div>
+    <div class="stat-card"><div class="stat-card-label">Empréstimos em aberto</div><div class="stat-card-value">${fmt(openLoansTotal)}</div></div>
+  </div>`;
+
+  if(monthKeys.length){
+    const incomeVals = monthKeys.map(k => { const e = ensureMonthEntry(k); return MONEY_SOURCES.reduce((s,src) => s + totalIncomeBySource(e, src.key), 0); });
+    const spentVals   = monthKeys.map(k => { const e = ensureMonthEntry(k); return MONEY_SOURCES.reduce((s,src) => s + spentBySource(e, src.key), 0); });
+    html += chartBoxWrap('Renda x Gastos', 'Comparativo dos últimos meses', groupedBarSVG(
+      monthKeys.map(monthShortLabel),
+      [
+        { name:'Renda',  color:'#3E6650', values: incomeVals },
+        { name:'Gastos', color:'#C97259', values: spentVals  }
+      ]
+    ));
+  }
+
+  if(vaults.length){
+    html += chartBoxWrap('Saldo dos cofres', 'Quanto cada cofre tem guardado hoje', horizontalBarsHTML(
+      vaults.map(v => ({ label: `${v.emoji||'🏦'} ${v.name}`, value: v.balance||0, color:'#3E6650' }))
+    ));
+  }
+
+  if(loans.length){
+    html += chartBoxWrap('Empréstimos', 'Total já pago vs. ainda em aberto', horizontalBarsHTML([
+      { label:'Pago',       value: totalPaidLoans, color:'#3E6650' },
+      { label:'Em aberto',  value: openLoansTotal, color:'#C97259' }
+    ]));
+  }
+
+  box.innerHTML = html;
 }
 
 // ---------------------------------------------------------------
@@ -2220,13 +2590,13 @@ function openMultiPaySheet(who){
     const loanTitle = escapeHtml(l.note || 'Empréstimo');
     const whoTag    = !who && l.who ? ` <span class="who-tag ${l.who}">${whoLabel(l.who)}</span>` : '';
     return `
-      <label class="field" style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
-        <input type="checkbox" class="multi-loan-checkbox" value="${l.id}" checked onchange="renderMultiPaySummary()" />
-        <div style="flex:1;">
-          <div style="font-weight:700;">${loanTitle}${whoTag}</div>
-          <div class="section-sub">${fmt(l.remaining)} restante · ${l.paidInstallments}/${l.installments} parcelas</div>
+      <div class="bill-row" style="cursor:pointer;" onclick="toggleLoanPick(this)">
+        <div class="bill-check loan-pick-check" data-loan-id="${l.id}"></div>
+        <div class="bill-info">
+          <div class="bill-name">${loanTitle}${whoTag}</div>
+          <div class="bill-sub">${fmt(l.remaining)} restante · ${l.paidInstallments}/${l.installments} parcelas</div>
         </div>
-      </label>`;
+      </div>`;
   }).join('');
   openSheet(`
     <div class="sheet-handle"></div>
@@ -2234,21 +2604,29 @@ function openMultiPaySheet(who){
     <div class="sheet-sub">Selecione os empréstimos e informe o valor pago.</div>
     <div id="multiLoanList">${loanItems}</div>
     <div class="field"><label>Valor pago</label><div class="field-money"><input type="number" id="multiPayAmount" placeholder="0,00" inputmode="decimal" /></div></div>
-    <div class="field"><label><input type="checkbox" id="forgivePartial" /> Perdoar parte do valor e quitar totalmente</label></div>
+    <div class="field"><label><input type="checkbox" id="forgivePartial" /> Desconto</label></div>
     <div class="field" id="multiLoanSummary" style="font-size:13px; color:var(--text-muted);"></div>
     <button class="btn btn-primary" onclick="confirmMultiPay()">Confirmar pagamento</button>
     <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
   `);
   renderMultiPaySummary();
 }
+function toggleLoanPick(rowEl){
+  const check = rowEl.querySelector('.loan-pick-check');
+  const nowChecked = !check.classList.contains('checked');
+  check.classList.toggle('checked', nowChecked);
+  check.textContent = nowChecked ? '✓' : '';
+  renderMultiPaySummary();
+}
 function renderMultiPaySummary(){
-  const checked = Array.from(document.querySelectorAll('#multiLoanList input[type=checkbox]:checked'));
+  const checked = Array.from(document.querySelectorAll('#multiLoanList .loan-pick-check.checked'));
   if(checked.length === 0){ document.getElementById('multiLoanSummary').textContent = 'Nenhum empréstimo selecionado.'; return; }
-  const total = loans.filter(l => checked.map(i=>i.value).includes(l.id)).reduce((sum,l)=>sum+l.remaining,0);
+  const ids = checked.map(i=>i.dataset.loanId);
+  const total = loans.filter(l => ids.includes(l.id)).reduce((sum,l)=>sum+l.remaining,0);
   document.getElementById('multiLoanSummary').textContent = `${checked.length} empréstimo(s) selecionado(s). Total restante: ${fmt(total)}.`;
 }
 async function confirmMultiPay(){
-  const selected    = Array.from(document.querySelectorAll('#multiLoanList input[type=checkbox]:checked')).map(i=>i.value);
+  const selected    = Array.from(document.querySelectorAll('#multiLoanList .loan-pick-check.checked')).map(i=>i.dataset.loanId);
   if(selected.length === 0){ showToast('Selecione ao menos um empréstimo.'); return; }
   const amountInput  = parseFloat(document.getElementById('multiPayAmount').value || 0);
   const forgive      = document.getElementById('forgivePartial').checked;
@@ -2318,6 +2696,49 @@ function changeMonth(delta){
   const [y,m] = currentMonthKey.split('-').map(Number);
   currentMonthKey = monthKeyFor(new Date(y, m-1+delta, 1));
   renderMonth(); renderActiveScreen();
+}
+
+// --- Month picker (calendar) ---
+let pickerYear = null;
+function openMonthPicker(){
+  const [y] = currentMonthKey.split('-').map(Number);
+  pickerYear = y;
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Escolher mês</div>
+    <div class="sheet-sub">Toque em um mês para ir direto até ele.</div>
+    <div id="monthPickerBody"></div>
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
+  `);
+  renderMonthPicker();
+}
+function changePickerYear(delta){ pickerYear += delta; renderMonthPicker(); }
+function renderMonthPicker(){
+  const [curY, curM] = currentMonthKey.split('-').map(Number);
+  const monthNames = Array.from({length:12}, (_,i) => new Date(2000,i,1).toLocaleDateString('pt-BR',{month:'short'}));
+  const cells = monthNames.map((label, i) => {
+    const m = i+1;
+    const isCurrent  = (pickerYear === curY && m === curM);
+    const key = pickerYear + '-' + String(m).padStart(2,'0');
+    return `<div class="month-picker-cell ${isCurrent?'is-selected':''}" onclick="pickMonth('${key}')">${escapeHtml(label.replace('.',''))}</div>`;
+  }).join('');
+  document.getElementById('monthPickerBody').innerHTML = `
+    <div class="month-picker-year">
+      <div class="month-picker-year-btn" onclick="changePickerYear(-1)">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M15 18l-6-6 6-6" stroke="#2A2420" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="month-picker-year-label">${pickerYear}</div>
+      <div class="month-picker-year-btn" onclick="changePickerYear(1)">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none"><path d="M9 18l6-6-6-6" stroke="#2A2420" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
+    <div class="month-picker-grid">${cells}</div>
+  `;
+}
+function pickMonth(key){
+  currentMonthKey = key;
+  renderMonth(); renderActiveScreen();
+  closeSheet();
 }
 function renderActiveScreen(){
   if(document.getElementById('screen-feira').classList.contains('active')) renderFeira();
