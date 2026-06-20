@@ -1,6 +1,6 @@
 # 🏦 Dueto (Gestão Financeira a Dois)
 
-O **Soma** é um aplicativo web focado na gestão financeira compartilhada para casais. Projetado com foco na experiência mobile, ele funciona como uma SPA (*Single Page Application*) com visual nativo de aplicativo (estilo iOS).
+O **Dueto** é um aplicativo web focado na gestão financeira compartilhada para casais. Projetado com foco na experiência mobile, ele funciona como uma SPA (*Single Page Application*) com visual nativo de aplicativo (estilo iOS).
 
 O grande diferencial do projeto é sua arquitetura híbrida: ele roda de forma 100% instantânea salvando os dados no dispositivo através do `localStorage` e utiliza uma planilha do **Google Sheets** como banco de dados em nuvem gratuito e sem servidor (Serverless), permitindo que duas pessoas mantenham as finanças sincronizadas em tempo real em aparelhos diferentes.
 
