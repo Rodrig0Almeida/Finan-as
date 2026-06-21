@@ -63,20 +63,8 @@
 *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; padding: 0; }
 
-html, body {
+html {
   height: 100%;
-  /* Lock the document itself so it never scrolls/bounces — this is what
-     makes position:fixed elements (tabbar) drift or reveal content behind
-     them on iOS Safari when the user swipes. The .app element below is the
-     only thing that scrolls.
-     Important: body must NOT be position:fixed here — that would anchor
-     .tabbar (a fixed child) to body's own box instead of the real visual
-     viewport, which is what caused the tab bar to sit too high with a gap
-     underneath whenever Safari's address bar was expanded. Plain
-     overflow:hidden on both html and body is enough to stop scrolling
-     while keeping fixed children anchored to the true viewport. */
-  overflow: hidden;
-  overscroll-behavior: none;
 }
 
 body {
@@ -89,19 +77,20 @@ body {
   font-size: var(--text-base);
   -webkit-font-smoothing: antialiased;
   position: relative;
+  min-height: 100%;
+  min-height: 100dvh;
+  /* The document itself scrolls normally here (no overflow:hidden) so
+     Safari's address bar can collapse on scroll like everywhere else —
+     that's worth a slightly less perfectly-pinned tab bar during the
+     swipe gesture. .tabbar uses position:fixed further down. */
 }
 
 .app {
   max-width: 480px;
   margin: 0 auto;
-  height: 100%;
   position: relative;
   padding: 0 18px 110px;
   padding-bottom: calc(110px + env(safe-area-inset-bottom));
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
 }
 
 
@@ -384,7 +373,8 @@ body {
   position: fixed; left: 0; right: 0; bottom: 0;
   display: flex; justify-content: center;
   padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
-  background: linear-gradient(to top, var(--cream) 70%, rgba(246,239,226,0));
+  padding-top: 22px;
+  background: linear-gradient(to top, var(--cream) 60%, rgba(246,239,226,0));
   z-index: 40;
 }
 .tabbar-inner {
@@ -1327,6 +1317,7 @@ body.dark .seg-opt { color: var(--text-muted); }
 body.dark .seg-opt.active { color: #fff; }
 
 /* tab bar */
+body.dark .tabbar { background: linear-gradient(to top, #111114 60%, rgba(17,17,20,0)); }
 body.dark .tabbar-inner { background: rgba(20,20,26,0.97); border-color: rgba(255,255,255,0.09); }
 body.dark .tab { color: rgba(237,232,224,0.45); }
 body.dark .tab.active { color: var(--vault-text); background: rgba(255,255,255,0.07); }
@@ -2193,6 +2184,7 @@ function activateTab(id){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
 }
 function goHome(){
   showScreen('screen-home'); activateTab('tabHome');
