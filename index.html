@@ -577,12 +577,32 @@ body {
   border-radius: 4px;
   margin: 6px auto 16px;
 }
+/* Sheet header row with optional back/close button */
+.sheet-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 4px;
+}
+.sheet-close-btn {
+  width: 32px; height: 32px; min-width: 32px;
+  border-radius: 50%;
+  background: rgba(42,36,32,0.07);
+  border: none;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.15s;
+  font-size: 18px;
+  line-height: 1;
+}
+.sheet-close-btn:active { background: rgba(42,36,32,0.14); }
 .sheet-title {
   font-family: 'Fraunces', serif;
   font-weight: 600;
   font-size: var(--text-lg);
   margin-bottom: 4px;
+  flex: 1;
 }
+.sheet-header .sheet-title { margin-bottom: 0; }
 .sheet-sub {
   font-size: var(--text-sm);
   color: var(--text-muted);
@@ -1602,7 +1622,7 @@ body.dark .loan-progress-bg { background: rgba(255,255,255,0.14); }
         <div class="total-label">Guardado nos cofres</div>
         <div class="total-value" id="totalGuardado">€ 0,00</div>
       </div>
-      <div class="total-card debt">
+      <div class="total-card debt" onclick="goLoans()" style="cursor:pointer;" title="Ver empréstimos">
         <div class="total-label">Emprestado (a devolver)</div>
         <div class="total-value small" id="totalDevido">€ 0,00</div>
       </div>
@@ -1711,7 +1731,10 @@ body.dark .loan-progress-bg { background: rgba(255,255,255,0.14); }
           <div class="section-title">Contas e Despesas</div>
           <div class="section-sub" id="billsCount"></div>
         </div>
-        <button class="btn btn-ghost" onclick="importPreviousMonthBills()">Pegar do mês anterior</button>
+        <button onclick="importPreviousMonthBills()" style="display:flex;align-items:center;gap:6px;background:rgba(31,58,46,0.08);border:none;border-radius:var(--r-full);padding:8px 14px;font-size:var(--text-xs);font-weight:700;color:var(--vault-2);cursor:pointer;white-space:nowrap;transition:background 0.15s;" onmousedown="this.style.background='rgba(31,58,46,0.16)'" onmouseup="this.style.background='rgba(31,58,46,0.08)'" ontouchstart="this.style.background='rgba(31,58,46,0.16)'" ontouchend="this.style.background='rgba(31,58,46,0.08)'">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18M3 6h18M3 18h10"/></svg>
+          Mês anterior
+        </button>
       </div>
       <div class="loans-box" id="billsBox" style="padding:4px 14px;"></div>
       <div class="add-dashed-btn" onclick="openNewBillSheet()" style="margin-top:8px;margin-bottom: 20px;">
@@ -1845,11 +1868,9 @@ body.dark .loan-progress-bg { background: rgba(255,255,255,0.14); }
       <div class="switch" id="devModeToggle" onclick="toggleDevMode()"></div>
     </div>
     <div id="devModePanel" style="display:none; margin-top:8px;">
-      <div class="section-head" style="margin-top:4px;"><div class="section-title" style="font-size:15px;">Ferramentas Dev</div></div>
+      <div class="section-head" style="margin-top:4px;"><div class="section-title" style="font-size:15px;">Modo Dev ativo</div></div>
       <div class="loans-box padded" style="display:flex;flex-direction:column;gap:10px;">
-        <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devOpenEditVaults()">✏️ Editar saldo de cofres</button>
-        <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devOpenDeleteTxns()">🗑️ Apagar transações individuais</button>
-        <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devOpenEditLoans()">🔧 Editar empréstimos</button>
+        <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">Uma barra flutuante <b>🛠️</b> aparece em todas as telas. Ela dá acesso rápido a editar cofres, transações, empréstimos e exportar dados. Toque nos valores nas telas para editar direto.</div>
         <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devExportData()">📤 Exportar dados (JSON)</button>
       </div>
     </div>
@@ -1945,6 +1966,20 @@ body.dark .loan-progress-bg { background: rgba(255,255,255,0.14); }
 
 <div class="toast" id="toast"></div>
 
+<!-- Fix 5: Floating Dev Toolbar — visible on all screens when Dev Mode is active -->
+<div id="devToolbar" style="display:none; position:fixed; bottom:calc(90px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); z-index:45; max-width:460px; width:calc(100% - 36px);">
+  <div style="background:var(--vault); border-radius:var(--r-xl); padding:10px 14px; display:flex; gap:8px; align-items:center; box-shadow:0 4px 24px rgba(0,0,0,0.3); overflow-x:auto;">
+    <span style="font-size:16px; min-width:20px;">🛠️</span>
+    <button onclick="devOpenEditVaults()" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:none;border-radius:var(--r-md);padding:7px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">✏️ Cofres</button>
+    <button onclick="devOpenDeleteTxns()" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:none;border-radius:var(--r-md);padding:7px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🗑️ Transações</button>
+    <button onclick="devOpenEditLoans()" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:none;border-radius:var(--r-md);padding:7px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🔧 Empréstimos</button>
+    <button onclick="devOpenEditMonthData()" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:none;border-radius:var(--r-md);padding:7px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📅 Mês</button>
+    <button onclick="devOpenEditBills()" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:none;border-radius:var(--r-md);padding:7px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">🧾 Contas</button>
+    <button onclick="devExportData()" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:none;border-radius:var(--r-md);padding:7px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📤 Export</button>
+    <button onclick="devImportData()" style="flex-shrink:0;background:rgba(255,255,255,0.12);border:none;border-radius:var(--r-md);padding:7px 11px;color:#fff;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Import</button>
+  </div>
+</div>
+
 <script>
 // --- Browser localStorage fallback ---
 if (!window.storage) {
@@ -1963,10 +1998,12 @@ if (!window.storage) {
 // ---------------------------------------------------------------
 // APP VERSION
 // ---------------------------------------------------------------
-// Fix 6: Bump this string every time the code is updated so users can see
-// the version in Settings → Desenvolvedor.
-// REMEMBER TO UPDATE THIS when making changes!
-const APP_VERSION = '1.9.0';  // last updated: 2026-06-25
+// ================================================================
+// ⚠️  ATENÇÃO: ATUALIZAR A VERSÃO A CADA MUDANÇA NO CÓDIGO ⚠️
+// Exibida em Configurações → Desenvolvedor → "Dueto vX.X.X"
+// Formato: MAJOR.MINOR.PATCH  — ex: 2.1.0 → 2.1.1 (bugfix) ou 2.2.0 (feature)
+// ================================================================
+const APP_VERSION = '2.1.2';  // last updated: 2026-06-25
 
 // ---------------------------------------------------------------
 // STATE
@@ -2164,6 +2201,9 @@ async function loadAll(){
   applyTabVisibility();
   applyAllAppearance();
   hideLoadingState();
+  // Fix 5: Restore dev toolbar visibility based on saved localSettings
+  const devToolbar = document.getElementById('devToolbar');
+  if(devToolbar) devToolbar.style.display = (localSettings && localSettings.devMode) ? '' : 'none';
   renderAll();
   renderMonth();
 }
@@ -2795,14 +2835,16 @@ async function toggleDevMode(){
   if(devToggle) devToggle.classList.toggle('on', !!localSettings.devMode);
   const devPanel = document.getElementById('devModePanel');
   if(devPanel) devPanel.style.display = localSettings.devMode ? '' : 'none';
-  showToast(localSettings.devMode ? '🛠️ Modo Dev ativado' : 'Modo Dev desativado');
+  // Fix 5: Show/hide floating toolbar on all screens
+  const toolbar = document.getElementById('devToolbar');
+  if(toolbar) toolbar.style.display = localSettings.devMode ? '' : 'none';
+  showToast(localSettings.devMode ? '🛠️ Modo Dev ativado — barra flutuante visível em todas as telas' : 'Modo Dev desativado');
 }
 function devOpenEditVaults(){
   if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
   if(vaults.length === 0){ showToast('Nenhum cofre para editar'); return; }
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">🛠️ Dev — Editar saldos</div>
+    ${sheetHeader(`🛠️ Dev — Editar saldos`)}
     <div class="sheet-sub">Altere diretamente o saldo de qualquer cofre.</div>
     ${vaults.map(v => `
       <div class="field">
@@ -2824,8 +2866,7 @@ function devOpenDeleteTxns(){
   if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
   const recent = [...txns].sort((a,b)=>b.ts-a.ts).slice(0, 40);
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">🛠️ Dev — Apagar transações</div>
+    ${sheetHeader(`🛠️ Dev — Apagar transações`)}
     <div class="sheet-sub">Selecione as transações a apagar (últimas 40).</div>
     <div style="display:flex;flex-direction:column;gap:4px;" id="devTxnList">
       ${recent.map(t => {
@@ -2862,8 +2903,7 @@ function devOpenEditLoans(){
   const open = loans.filter(l=>l.remaining>0);
   if(open.length===0){ showToast('Nenhum empréstimo em aberto'); return; }
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">🛠️ Dev — Editar empréstimos</div>
+    ${sheetHeader(`🛠️ Dev — Editar empréstimos`)}
     <div class="sheet-sub">Ajuste o valor restante de cada empréstimo em aberto.</div>
     ${open.map(l => `
       <div class="field">
@@ -2889,6 +2929,99 @@ function devExportData(){
   a.href = URL.createObjectURL(blob);
   a.download = `dueto-backup-${new Date().toISOString().slice(0,10)}.json`;
   a.click(); URL.revokeObjectURL(a.href);
+}
+
+// Fix 5: Edit month income and vault transfer data directly
+function devOpenEditMonthData(){
+  if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
+  const entry = ensureMonthEntry(currentMonthKey);
+  const nameA = names.a || 'Pessoa A'; const nameB = names.b || 'Pessoa B';
+  openSheet(`
+    ${sheetHeader(`🛠️ Dev — Mês ${monthLabelFor(currentMonthKey)}`)}
+    <div class="sheet-sub">Edite diretamente a renda e transferências para cofres deste mês.</div>
+    <div class="field"><label>${nameA} — Físico</label><div class="field-money"><input type="number" id="dmi-a-fisico" value="${(entry.income.a.fisico||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <div class="field"><label>${nameA} — Vale</label><div class="field-money"><input type="number" id="dmi-a-vale" value="${(entry.income.a.vale||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <div class="field"><label>${nameA} — Conta</label><div class="field-money"><input type="number" id="dmi-a-conta" value="${(entry.income.a.conta||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <div class="field"><label>${nameB} — Físico</label><div class="field-money"><input type="number" id="dmi-b-fisico" value="${(entry.income.b.fisico||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <div class="field"><label>${nameB} — Vale</label><div class="field-money"><input type="number" id="dmi-b-vale" value="${(entry.income.b.vale||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <div class="field"><label>${nameB} — Conta</label><div class="field-money"><input type="number" id="dmi-b-conta" value="${(entry.income.b.conta||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <div class="field"><label>Transferências p/ cofres — Físico</label><div class="field-money"><input type="number" id="dmi-vt-fisico" value="${(entry.vaultTransfers.fisico||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <div class="field"><label>Transferências p/ cofres — Conta</label><div class="field-money"><input type="number" id="dmi-vt-conta" value="${(entry.vaultTransfers.conta||0).toFixed(2)}" inputmode="decimal"/></div></div>
+    <button class="btn btn-primary" onclick="devSaveMonthData()">Salvar</button>
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
+  `);
+}
+async function devSaveMonthData(){
+  const entry = ensureMonthEntry(currentMonthKey);
+  entry.income.a.fisico = parseFloat(document.getElementById('dmi-a-fisico').value)||0;
+  entry.income.a.vale   = parseFloat(document.getElementById('dmi-a-vale').value)||0;
+  entry.income.a.conta  = parseFloat(document.getElementById('dmi-a-conta').value)||0;
+  entry.income.b.fisico = parseFloat(document.getElementById('dmi-b-fisico').value)||0;
+  entry.income.b.vale   = parseFloat(document.getElementById('dmi-b-vale').value)||0;
+  entry.income.b.conta  = parseFloat(document.getElementById('dmi-b-conta').value)||0;
+  entry.vaultTransfers.fisico = parseFloat(document.getElementById('dmi-vt-fisico').value)||0;
+  entry.vaultTransfers.conta  = parseFloat(document.getElementById('dmi-vt-conta').value)||0;
+  await persistMonthData(); closeSheet(); showToast('Dados do mês atualizados'); renderMonth();
+}
+
+// Fix 5: Edit all bills directly
+function devOpenEditBills(){
+  if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
+  if(bills.length === 0){ showToast('Nenhuma conta cadastrada'); return; }
+  openSheet(`
+    ${sheetHeader(`🛠️ Dev — Editar contas (${bills.length})`)}
+    <div class="sheet-sub">Altere nome, valor e cofre destino de qualquer conta.</div>
+    ${bills.map(b => `
+      <div style="border:1px solid var(--line);border-radius:var(--r-md);padding:10px 12px;margin-bottom:10px;">
+        <div style="font-size:11px;font-weight:700;color:var(--vault-2);text-transform:uppercase;margin-bottom:6px;">${escapeHtml(b.name)}</div>
+        <div class="field" style="margin-bottom:8px;"><label>Nome</label><input type="text" class="dev-bill-name" data-id="${b.id}" value="${escapeHtml(b.name)}" maxlength="30" style="width:100%;border:1.5px solid var(--line);border-radius:var(--r-md);padding:8px 10px;font-size:14px;background:#fff;color:var(--ink);" /></div>
+        <div class="field" style="margin-bottom:8px;"><label>Valor padrão</label><div class="field-money"><input type="number" class="dev-bill-amount" data-id="${b.id}" value="${b.defaultAmount}" inputmode="decimal"/></div></div>
+        <div class="field" style="margin-bottom:0;"><label>Cofre destino</label>
+          <select class="dev-bill-vault" data-id="${b.id}" style="width:100%;border:1.5px solid var(--line);border-radius:var(--r-md);padding:8px 10px;font-size:14px;background:#fff;color:var(--ink);">
+            <option value="" ${!b.targetVaultId?'selected':''}>Nenhum</option>
+            ${vaults.map(v=>`<option value="${v.id}" ${b.targetVaultId===v.id?'selected':''}>Cofre: ${escapeHtml(v.name)}</option>`).join('')}
+          </select>
+        </div>
+      </div>`).join('')}
+    <button class="btn btn-primary" onclick="devSaveBills()">Salvar tudo</button>
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
+  `);
+}
+async function devSaveBills(){
+  document.querySelectorAll('.dev-bill-name').forEach(inp => {
+    const b = bills.find(x=>x.id===inp.dataset.id); if(b && inp.value.trim()) b.name = inp.value.trim();
+  });
+  document.querySelectorAll('.dev-bill-amount').forEach(inp => {
+    const b = bills.find(x=>x.id===inp.dataset.id); if(b) b.defaultAmount = parseFloat(inp.value)||0;
+  });
+  document.querySelectorAll('.dev-bill-vault').forEach(sel => {
+    const b = bills.find(x=>x.id===sel.dataset.id); if(b) b.targetVaultId = sel.value || null;
+  });
+  await persistBills(); closeSheet(); showToast('Contas atualizadas'); renderMonth();
+}
+
+// Fix 5: Import JSON backup
+function devImportData(){
+  if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = async (e) => {
+    const file = e.target.files[0]; if(!file) return;
+    try{
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if(!confirm(`Importar dados de "${file.name}"? Isso vai SUBSTITUIR todos os dados atuais.`)) return;
+      if(Array.isArray(data.vaults))   vaults    = data.vaults;
+      if(Array.isArray(data.txns))     txns      = data.txns;
+      if(Array.isArray(data.loans))    loans     = data.loans;
+      if(Array.isArray(data.bills))    bills     = data.bills;
+      if(data.monthData)               monthData = data.monthData;
+      if(data.names)                   names     = data.names;
+      await persistVaults(); await persistTxns(); await persistLoans(); await persistBills(); await persistMonthData(); await persistNames();
+      showToast('Dados importados com sucesso!'); renderAll(); renderMonth();
+    }catch(err){ showToast('Erro ao importar: ' + err.message); }
+  };
+  input.click();
 }
 
 // ---------------------------------------------------------------
@@ -3002,12 +3135,23 @@ function openSheet(html){ document.getElementById('sheet').innerHTML = html; doc
 function closeSheet(){ document.getElementById('overlay').classList.remove('show'); }
 function closeSheetOnBackdrop(e){ if(e.target.id === 'overlay') closeSheet(); }
 
+// Helper: build a sheet header with handle + back/close button + title
+// Usage: sheetHeader('Título') → HTML string
+// All sheets use this so there's always a way to close/go back.
+function sheetHeader(title){
+  return `
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <button class="sheet-close-btn" onclick="closeSheet()" aria-label="Fechar">✕</button>
+      <div class="sheet-title">${title}</div>
+    </div>`;
+}
+
 function openNewVaultSheet(){
   pendingEmoji = '🏦';
   window._pendingVaultEditId = null;
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Novo cofre</div>
+    ${sheetHeader(`Novo cofre`)}
     <div class="sheet-sub">Dê um nome e escolha um símbolo para identificar esse cofre.</div>
     <div class="field"><label>Nome do cofre</label><input type="text" id="newVaultName" placeholder="ex: Eletrodomésticos, Viagem" maxlength="30" /></div>
     <div class="field"><label>Símbolo</label><div class="emoji-grid" id="emojiGrid"></div></div>
@@ -3023,8 +3167,7 @@ function openEditVaultSheet(vaultId){
   pendingEmoji = v.emoji || '🏦';
   window._pendingVaultEditId = v.id;
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Editar cofre</div>
+    ${sheetHeader(`Editar cofre`)}
     <div class="sheet-sub">Altere o nome e o símbolo deste cofre.</div>
     <div class="field"><label>Nome do cofre</label><input type="text" id="editVaultName" value="${escapeHtml(v.name)}" maxlength="30" /></div>
     <div class="field"><label>Símbolo</label><div class="emoji-grid" id="emojiGrid"></div></div>
@@ -3065,8 +3208,7 @@ function openMoveSheet(type){
   if(type==='deposito'){ title='Guardar dinheiro'; sub=`Adicionar valor ao cofre "${v.name}".`; btnLabel='Guardar'; }
   if(type==='retirada'){ title='Retirar dinheiro'; sub=`Tirar valor do cofre "${v.name}" — sem precisar devolver.`; btnLabel='Retirar'; btnClass='danger'; }
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">${title}</div>
+    ${sheetHeader(`${title}`)}
     <div class="sheet-sub">${sub}</div>
     <div class="field"><label>Valor</label><div class="field-money"><input type="number" id="moveAmount" placeholder="0,00" inputmode="decimal" autofocus /></div></div>
     <div class="field"><label>Nota (opcional)</label><input type="text" id="moveNote" placeholder="ex: economia do mês" maxlength="60" /></div>
@@ -3092,8 +3234,7 @@ function openTransferSheet(){
     ...vaults.filter(x => x.id !== v.id).map(x => `<option value="${x.id}">Cofre: ${escapeHtml(x.name)}</option>`)
   ].join('');
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Enviar valor</div>
+    ${sheetHeader(`Enviar valor`)}
     <div class="sheet-sub">Envie dinheiro do cofre "${escapeHtml(v.name)}" para outro cofre, conta corrente ou dinheiro.</div>
     <div class="field"><label>Valor</label><div class="field-money"><input type="number" id="transferAmount" placeholder="0,00" inputmode="decimal" oninput="renderTransferPreview()" autofocus /></div></div>
     <div class="field"><label>Destino</label><select id="transferDestination" onchange="renderTransferPreview()"><option value="">Selecione</option>${targetOptions}<option value="dinheiro">Dinheiro</option></select></div>
@@ -3156,8 +3297,7 @@ function openLoanSheet(){
   const nameA = names.a || 'Pessoa A';
   const nameB = names.b || 'Pessoa B';
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Pegar emprestado</div>
+    ${sheetHeader(`Pegar emprestado`)}
     <div class="sheet-sub">Tire um valor do cofre "${v.name}" combinando em quantas vezes vai devolver.</div>
     <div class="field"><label>Quem está pegando?</label><select id="loanWho"><option value="">Selecione</option><option value="a">${nameA}</option><option value="b">${nameB}</option></select></div>
     <div class="field"><label>Valor a pegar</label><div class="field-money"><input type="number" id="loanAmount" placeholder="0,00" inputmode="decimal" oninput="updateLoanPreview()" /></div></div>
@@ -3231,8 +3371,7 @@ function openPayInstallment(loanId){
   const helpText = autoReturn
     ? '<div class="field"><div class="section-sub">A meta deste cofre ainda não foi batida. O valor será devolvido a ele automaticamente.</div></div>' : '';
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Pagar parcela</div>
+    ${sheetHeader(`Pagar parcela`)}
     <div class="sheet-sub">Parcela ${loan.paidInstallments+1} de ${loan.installments} do empréstimo "${escapeHtml(loan.note||'sem nota')}".</div>
     <div class="field"><label>Quem está pagando?</label><select id="paymentWho"><option value="">Selecione</option><option value="a">${nameA}</option><option value="b">${nameB}</option></select></div>
     <div class="field"><label>Valor da parcela</label><div class="field-money"><input type="number" id="payAmount" value="${payAmount.toFixed(2)}" inputmode="decimal" /></div></div>
@@ -3258,8 +3397,7 @@ function openMultiPaySheet(who){
       </div>`;
   }).join('');
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Quitar ${who ? 'empréstimos de ' + whoLabel(who) : 'vários empréstimos'}</div>
+    ${sheetHeader(`Quitar ${who ? 'empréstimos de ' + whoLabel(who) : 'vários empréstimos'}`)}
     <div class="sheet-sub">Selecione os empréstimos e informe o valor pago.</div>
     <div id="multiLoanList">${loanItems}</div>
     <div class="field"><label>Valor pago</label><div class="field-money"><input type="number" id="multiPayAmount" placeholder="0,00" inputmode="decimal" /></div></div>
@@ -3384,8 +3522,7 @@ function openMonthPicker(){
   const [y] = currentMonthKey.split('-').map(Number);
   pickerYear = y;
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Escolher mês</div>
+    ${sheetHeader(`Escolher mês`)}
     <div class="sheet-sub">Toque em um mês para ir direto até ele.</div>
     <div id="monthPickerBody"></div>
     <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
@@ -3477,8 +3614,7 @@ function renderMonth(){
 function openAddIncomeSheet(){
   const nameA = names.a || 'Pessoa A'; const nameB = names.b || 'Pessoa B';
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Adicionar Renda</div>
+    ${sheetHeader(`Adicionar Renda`)}
     <div class="sheet-sub">De quem é este dinheiro e onde ele está (físico ou em conta)?</div>
     <div class="field"><label>De quem?</label><select id="incWho"><option value="a">${nameA}</option><option value="b">${nameB}</option></select></div>
     <div class="field"><label>Onde?</label><select id="incSource"><option value="">Selecione</option>${MONEY_SOURCES.map(s=>`<option value="${s.key}">${s.emoji} ${s.label}</option>`).join('')}</select></div>
@@ -3618,8 +3754,7 @@ function openPostponeLoanSheet(loanId){
   const loan = loans.find(l=>l.id===loanId); if(!loan) return;
   const currentLabel = monthLabelFor(loan.startMonthKey || defaultReferenceMonthKey());
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Adiar empréstimo</div>
+    ${sheetHeader(`Adiar empréstimo`)}
     <div class="sheet-sub">Empréstimo "${escapeHtml(loan.note || 'sem nota')}" — início atual: <b>${currentLabel}</b>. Para quando deseja adiar?</div>
     <div class="field">
       <label>Adiar em</label>
@@ -3652,8 +3787,7 @@ function openEditInstallmentsSheet(loanId){
   const remainingInstallments = Math.max(1, loan.installments - loan.paidInstallments);
   const options = [1,2,3,4,6,8,10,12].filter(n => n >= 1);
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Mudar parcelas</div>
+    ${sheetHeader(`Mudar parcelas`)}
     <div class="sheet-sub">Empréstimo "${escapeHtml(loan.note || 'sem nota')}" — restam <b>${fmt(loan.remaining)}</b> em <b>${remainingInstallments}</b> parcela${remainingInstallments>1?'s':''}. Em quantas parcelas restantes deseja dividir?</div>
     <div class="field">
       <label>Parcelas restantes</label>
@@ -3700,21 +3834,48 @@ function renderSourceBalances(entry){
 }
 
 function renderBills(entry){
-  const visibleBills = bills.filter(b => (!b.createdMonthKey || b.createdMonthKey <= currentMonthKey) && !entry.hiddenBills[b.id]);
-  document.getElementById('billsCount').textContent = visibleBills.length + (visibleBills.length===1?' conta':' contas');
+  const devMode     = !!(localSettings && localSettings.devMode);
+  const allBills    = bills.filter(b => !b.createdMonthKey || b.createdMonthKey <= currentMonthKey);
+  const visibleBills = allBills.filter(b => !entry.hiddenBills[b.id]);
+  const hiddenBills  = allBills.filter(b => !!entry.hiddenBills[b.id]);
+
+  const paidCount   = visibleBills.filter(b => !!entry.billsPaid[b.id]).length;
+  const unpaidBills = visibleBills.filter(b => !entry.billsPaid[b.id]);
+  const totalUnpaid = unpaidBills.reduce((s,b) => s + billAmount(entry, b), 0);
+  const countText   = visibleBills.length + (visibleBills.length===1?' conta':' contas');
+  const unpaidText  = unpaidBills.length > 0
+    ? ` · ${unpaidBills.length} a pagar · falta ${fmt(totalUnpaid)}`
+    : ' · tudo pago ✓';
+  const hiddenBadge = (devMode && hiddenBills.length > 0)
+    ? ` <span style="color:var(--brass);font-weight:700;">· 🛠️ ${hiddenBills.length} oculta(s)</span>` : '';
+  document.getElementById('billsCount').innerHTML = `<span>${countText}</span><span style="color:${unpaidBills.length>0?'var(--terracotta)':'var(--vault-light)'};font-weight:600;">${unpaidText}</span>${hiddenBadge}`;
+
   const box = document.getElementById('billsBox');
-  if(visibleBills.length === 0){
-    box.innerHTML = '<div class="empty-note">Nenhuma conta cadastrada.</div>';
-  } else {
-    box.innerHTML = visibleBills.map(b => {
-      const amount      = billAmount(entry, b);
-      const paidSplit   = entry.billsPaid[b.id]; const paid = !!paidSplit;
-      const sourceSummary = paid
-        ? Object.entries(paidSplit).filter(([k,v])=>v>0).map(([k,v])=>{ const src=MONEY_SOURCES.find(s=>s.key===k); return `${src.emoji} ${fmt(v)}`; }).join(' · ')
-        : 'toque no valor para ajustar este mês';
-      const targetVault = b.targetVaultId ? vaults.find(v=>v.id === b.targetVaultId) : null;
-      const vaultBadge  = targetVault ? `<span class="bill-tag" style="background:var(--vault-light); color:#fff; font-size:9.5px;">🏦 p/ ${targetVault.name}</span>` : '';
+
+  const renderBillRow = (b, isHidden) => {
+    const amount      = billAmount(entry, b);
+    const paidSplit   = entry.billsPaid[b.id]; const paid = !!paidSplit;
+    const sourceSummary = paid
+      ? Object.entries(paidSplit).filter(([k,v])=>v>0).map(([k,v])=>{ const src=MONEY_SOURCES.find(s=>s.key===k); return `${src.emoji} ${fmt(v)}`; }).join(' · ')
+      : isHidden ? 'oculta neste mês' : 'toque no valor para ajustar este mês';
+    const targetVault = b.targetVaultId ? vaults.find(v=>v.id === b.targetVaultId) : null;
+    const vaultBadge  = targetVault ? `<span class="bill-tag" style="background:var(--vault-light); color:#fff; font-size:9.5px;">🏦 p/ ${targetVault.name}</span>` : '';
+    if(isHidden){
       return `
+      <div class="bill-row" style="opacity:0.5; background:repeating-linear-gradient(135deg, transparent, transparent 6px, rgba(184,134,43,0.06) 6px, rgba(184,134,43,0.06) 12px);">
+        <div class="bill-check" style="background:rgba(184,134,43,0.15); color:var(--brass); font-size:13px; display:flex; align-items:center; justify-content:center;">🙈</div>
+        <div class="bill-info">
+          <div class="bill-name" style="text-decoration:line-through; color:var(--text-muted);">${escapeHtml(b.name)} ${vaultBadge} <span style="font-size:10px;color:var(--brass);font-weight:700;">OCULTA</span></div>
+          <div class="bill-sub">${sourceSummary}</div>
+        </div>
+        <div class="bill-amount-wrap">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text-muted);padding:0 6px;">${fmt(amount)}</div>
+          <div class="bill-delete" onclick="restoreBill('${b.id}')" title="Restaurar neste mês" style="color:var(--vault-2); font-size:14px;">↩</div>
+          <div class="bill-delete" onclick="deleteBill('${b.id}')">✕</div>
+        </div>
+      </div>`;
+    }
+    return `
       <div class="bill-row">
         <div class="bill-check ${paid?'checked':''}" onclick="${paid ? `unpayBill('${b.id}')` : `openPayBillSheet('${b.id}')`}">${paid?'✓':''}</div>
         <div class="bill-info">
@@ -3727,8 +3888,24 @@ function renderBills(entry){
           <div class="bill-delete" onclick="deleteBill('${b.id}')">✕</div>
         </div>
       </div>`;
-    }).join('');
+  };
+
+  if(visibleBills.length === 0 && (!devMode || hiddenBills.length === 0)){
+    box.innerHTML = '<div class="empty-note">Nenhuma conta cadastrada.</div>';
+  } else {
+    const visibleRows = visibleBills.map(b => renderBillRow(b, false)).join('');
+    const hiddenRows  = (devMode && hiddenBills.length > 0)
+      ? `<div style="border-top:1.5px dashed var(--brass);margin:6px 0 2px;padding-top:4px;"><div style="font-size:10px;font-weight:700;color:var(--brass);text-transform:uppercase;letter-spacing:.05em;padding:4px 2px 6px;">🛠️ Ocultas neste mês</div>${hiddenBills.map(b => renderBillRow(b, true)).join('')}</div>`
+      : '';
+    box.innerHTML = visibleRows + hiddenRows;
   }
+}
+
+async function restoreBill(billId){
+  const entry = ensureMonthEntry(currentMonthKey);
+  delete entry.hiddenBills[billId];
+  await persistMonthData(); renderMonth();
+  showToast('Despesa restaurada neste mês');
 }
 
 async function unpayBill(billId){
@@ -3760,9 +3937,15 @@ async function updateBillAmount(billId, value){
 }
 async function deleteBill(billId){
   const b = bills.find(x=>x.id===billId);
-  if(!b || !confirm(`Remover esta conta deste mês: "${b.name}"?`)) return;
-  const entry     = ensureMonthEntry(currentMonthKey);
+  if(!b) return;
+
+  // Offer two options: hide only this month, or delete permanently
+  const choice = confirm(`Excluir "${b.name}" permanentemente de todos os meses?\n\nOK = Excluir para sempre\nCancelar = Apenas ocultar neste mês`);
+
+  const entry = ensureMonthEntry(currentMonthKey);
   const paidSplit = entry.billsPaid[billId];
+
+  // Reverse vault deposit if this bill had a target vault and was paid
   if(b.targetVaultId && paidSplit){
     const amount      = Object.values(paidSplit).reduce((sum,v)=>sum+(v||0),0);
     const targetVault = vaults.find(x => x.id === b.targetVaultId);
@@ -3773,16 +3956,32 @@ async function deleteBill(billId){
       await persistVaults(); await persistTxns();
     }
   }
-  entry.hiddenBills[billId] = true;
-  delete entry.billsPaid[billId];
-  delete entry.billOverrides[billId];
+
+  if(choice){
+    // Excluir permanentemente
+    bills = bills.filter(x => x.id !== billId);
+    // Clean up month data references across all months
+    Object.values(monthData).forEach(me => {
+      if(me.hiddenBills) delete me.hiddenBills[billId];
+      if(me.billsPaid)   delete me.billsPaid[billId];
+      if(me.billOverrides) delete me.billOverrides[billId];
+    });
+    await persistBills();
+    showToast(`"${b.name}" excluída permanentemente.`);
+  } else {
+    // Apenas esconder neste mês
+    entry.hiddenBills[billId] = true;
+    delete entry.billsPaid[billId];
+    delete entry.billOverrides[billId];
+    showToast(`"${b.name}" ocultada neste mês.`);
+  }
+
   await persistMonthData(); renderMonth();
 }
 
 function openNewBillSheet(){
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Nova conta / despesa</div>
+    ${sheetHeader(`Nova conta / despesa`)}
     <div class="sheet-sub">Cadastre uma despesa fixa ou variável.</div>
     <div class="field"><label>Nome da despesa</label><input type="text" id="newBillName" placeholder="ex: Aluguel, Feira, Transferência" maxlength="30" /></div>
     <div class="field">
@@ -3828,8 +4027,7 @@ function openEditBillSheet(billId){
   window._pendingBillEditId = billId;
   window._pendingBillKind = b.kind || 'fixa';
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Editar despesa</div>
+    ${sheetHeader(`Editar despesa`)}
     <div class="sheet-sub">Altere os dados desta conta ou despesa.</div>
     <div class="field"><label>Nome da despesa</label><input type="text" id="editBillName" value="${escapeHtml(b.name)}" maxlength="30" /></div>
     <div class="field">
@@ -3877,8 +4075,7 @@ function openPayBillSheet(billId){
     remaining -= suggestion[src];
   });
   openSheet(`
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Pagar ${escapeHtml(b.name)}</div>
+    ${sheetHeader(`Pagar ${escapeHtml(b.name)}`)}
     <div class="sheet-sub">Valor: <b>${fmt(amount)}</b>. De onde vai sair esse dinheiro?</div>
     ${available.map(src => {
       const source = MONEY_SOURCES.find(x=>x.key===src.key);
