@@ -161,6 +161,15 @@ body {
   background: var(--vault-light);
 }
 .sync-dot.off { background: var(--terracotta); }
+/* Fix 7: Spinning indicator while syncing — UPDATE APP_VERSION comment when bumping version */
+.sync-dot.spinning {
+  width: 11px; height: 11px;
+  background: transparent;
+  border: 2px solid var(--vault-light);
+  border-top-color: transparent;
+  animation: syncSpin 0.7s linear infinite;
+}
+@keyframes syncSpin { to { transform: rotate(360deg); } }
 
 /* ================================================================
    SUMMARY CARDS (totals)
@@ -719,6 +728,7 @@ body {
 .detail-header {
   display: flex; align-items: center; gap: 12px;
   padding: 18px 0 6px;
+  padding-top: calc(18px + env(safe-area-inset-top));
 }
 .detail-header-label {
   font-weight: 700;
@@ -1823,6 +1833,30 @@ body.dark .loan-progress-bg { background: rgba(255,255,255,0.14); }
     </div>
 
     <button class="delete-all-btn" onclick="confirmResetAll()">Apagar todos os dados</button>
+
+    <!-- Fix 5: Dev Mode toggle — hidden power-user mode for editing any data directly.
+         Fix 6: App version number — bump APP_VERSION in JS when updating the code. -->
+    <div class="section-head" style="margin-top:24px;"><div class="section-title">Desenvolvedor</div></div>
+    <div class="switch-row">
+      <div class="switch-row-text">
+        <div class="switch-row-title">Modo Dev 🛠️</div>
+        <div class="switch-row-sub">Permite editar saldos diretamente, apagar transações individuais e forçar valores. Use com cuidado.</div>
+      </div>
+      <div class="switch" id="devModeToggle" onclick="toggleDevMode()"></div>
+    </div>
+    <div id="devModePanel" style="display:none; margin-top:8px;">
+      <div class="section-head" style="margin-top:4px;"><div class="section-title" style="font-size:15px;">Ferramentas Dev</div></div>
+      <div class="loans-box padded" style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devOpenEditVaults()">✏️ Editar saldo de cofres</button>
+        <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devOpenDeleteTxns()">🗑️ Apagar transações individuais</button>
+        <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devOpenEditLoans()">🔧 Editar empréstimos</button>
+        <button class="btn btn-ghost" style="text-align:left;padding:10px 4px;" onclick="devExportData()">📤 Exportar dados (JSON)</button>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:24px; margin-bottom:4px; font-size:11px; color:var(--text-faint);">
+      <!-- Fix 6: Version string — update APP_VERSION constant in JS when modifying the code -->
+      Dueto v<span id="appVersionLabel"></span>
+    </div>
   </div>
 
   <!-- ===================== ESTATÍSTICAS ===================== -->
@@ -1844,6 +1878,35 @@ body.dark .loan-progress-bg { background: rgba(255,255,255,0.14); }
 
   <div class="loading" id="loadingState">Abrindo os cofres…</div>
 </div>
+
+<!-- Fix 8: Full-screen splash screen — hides the app until data has loaded.
+     UPDATE APP_VERSION comment when bumping the version number below. -->
+<div id="splashScreen" style="
+  position:fixed; inset:0; z-index:999;
+  background:var(--cream);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px;
+  background-image:
+    radial-gradient(circle at 100% 0%, rgba(184,134,43,0.07), transparent 45%),
+    radial-gradient(circle at 0% 100%, rgba(31,58,46,0.06), transparent 40%);
+">
+  <div style="width:62px;height:62px;border-radius:16px;background:linear-gradient(155deg,var(--vault-light),var(--vault));display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(31,58,46,0.3);">
+    <svg viewBox="0 0 64 64" width="40" height="36" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="32" r="11" fill="none" stroke="#D9A949" stroke-width="3.5"/>
+      <circle cx="42" cy="32" r="11" fill="none" stroke="#F6EFE2" stroke-width="3.5" opacity=".85"/>
+    </svg>
+  </div>
+  <div style="font-family:'Fraunces',serif;font-weight:600;font-size:26px;color:var(--vault);letter-spacing:-0.01em;">Dueto</div>
+  <div style="display:flex;gap:7px;align-items:center;">
+    <div style="width:7px;height:7px;border-radius:50%;background:var(--vault-light);animation:splashDot 1.2s ease-in-out infinite;"></div>
+    <div style="width:7px;height:7px;border-radius:50%;background:var(--vault-light);animation:splashDot 1.2s ease-in-out 0.2s infinite;"></div>
+    <div style="width:7px;height:7px;border-radius:50%;background:var(--vault-light);animation:splashDot 1.2s ease-in-out 0.4s infinite;"></div>
+  </div>
+</div>
+<style>
+@keyframes splashDot { 0%,80%,100%{opacity:.25;transform:scale(.85)} 40%{opacity:1;transform:scale(1)} }
+#splashScreen.hide { animation: splashFade 0.35s ease forwards; }
+@keyframes splashFade { to { opacity:0; pointer-events:none; } }
+</style>
 
 <!-- ===================== TAB BAR ===================== -->
 <div class="tabbar">
@@ -1896,6 +1959,14 @@ if (!window.storage) {
     }
   };
 }
+
+// ---------------------------------------------------------------
+// APP VERSION
+// ---------------------------------------------------------------
+// Fix 6: Bump this string every time the code is updated so users can see
+// the version in Settings → Desenvolvedor.
+// REMEMBER TO UPDATE THIS when making changes!
+const APP_VERSION = '1.9.0';  // last updated: 2026-06-25
 
 // ---------------------------------------------------------------
 // STATE
@@ -2058,6 +2129,9 @@ function showLoadingState(msg){
 }
 function hideLoadingState(){
   document.getElementById('loadingState').style.display = 'none';
+  // Fix 8: Hide the full-screen splash screen with a fade once data is ready
+  const splash = document.getElementById('splashScreen');
+  if(splash){ splash.classList.add('hide'); setTimeout(()=>splash.remove(), 400); }
 }
 
 // Called once on page open, and manually whenever the user taps the sync pill.
@@ -2066,6 +2140,8 @@ async function loadAll(){
   await loadLocalOnlySettings();
 
   if(syncUrl){
+    // Fix 7: Show spinning "sincronizando" state on the pill while fetching
+    setSyncStatus('syncing');
     showLoadingState('Buscando dados da nuvem…');
     try{
       const res = await fetch(syncUrl, { method: 'GET' });
@@ -2152,8 +2228,10 @@ async function pushToCloud(){
 
 function setSyncStatus(state){
   let label, dotClass;
-  if(state === 'saving'){
-    label = 'salvando…'; dotClass = 'sync-dot';
+  if(state === 'saving' || state === 'syncing'){
+    // Fix 7: Show spinning animation and "sincronizando" text while syncing/saving
+    label = state === 'syncing' ? 'sincronizando…' : 'salvando…';
+    dotClass = 'sync-dot spinning';
   } else if(state === 'synced'){
     label = 'sincronizado'; dotClass = 'sync-dot';
   } else { // 'nolink' or any error/offline state
@@ -2529,6 +2607,16 @@ function renderSettings(){
            onclick="setThemeColor('${t.key}')"></div>
     `).join('');
   }
+
+  // Fix 6: Show app version
+  const vLabel = document.getElementById('appVersionLabel');
+  if(vLabel) vLabel.textContent = APP_VERSION;
+
+  // Fix 5: Dev mode toggle
+  const devToggle = document.getElementById('devModeToggle');
+  if(devToggle) devToggle.classList.toggle('on', !!(localSettings && localSettings.devMode));
+  const devPanel = document.getElementById('devModePanel');
+  if(devPanel) devPanel.style.display = (localSettings && localSettings.devMode) ? '' : 'none';
 }
 
 let profileNameTimer = null;
@@ -2693,6 +2781,114 @@ async function confirmResetAll(){
   vaults = []; txns = []; loans = []; bills = []; monthData = {};
   await persistVaults(); await persistTxns(); await persistLoans(); await persistBills(); await persistMonthData();
   showToast('Tudo apagado'); goHome();
+}
+
+// ---------------------------------------------------------------
+// FIX 5: DEV MODE — toggle and tools
+// Only available via Settings → Desenvolvedor.
+// UPDATE APP_VERSION when making changes here.
+// ---------------------------------------------------------------
+async function toggleDevMode(){
+  localSettings.devMode = !localSettings.devMode;
+  await persistLocalSettings();
+  const devToggle = document.getElementById('devModeToggle');
+  if(devToggle) devToggle.classList.toggle('on', !!localSettings.devMode);
+  const devPanel = document.getElementById('devModePanel');
+  if(devPanel) devPanel.style.display = localSettings.devMode ? '' : 'none';
+  showToast(localSettings.devMode ? '🛠️ Modo Dev ativado' : 'Modo Dev desativado');
+}
+function devOpenEditVaults(){
+  if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
+  if(vaults.length === 0){ showToast('Nenhum cofre para editar'); return; }
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🛠️ Dev — Editar saldos</div>
+    <div class="sheet-sub">Altere diretamente o saldo de qualquer cofre.</div>
+    ${vaults.map(v => `
+      <div class="field">
+        <label>${escapeHtml(v.emoji||'🏦')} ${escapeHtml(v.name)}</label>
+        <div class="field-money"><input type="number" class="dev-vault-input" data-id="${v.id}" value="${v.balance.toFixed(2)}" inputmode="decimal" /></div>
+      </div>`).join('')}
+    <button class="btn btn-primary" onclick="devSaveVaultBalances()">Salvar saldos</button>
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
+  `);
+}
+async function devSaveVaultBalances(){
+  document.querySelectorAll('.dev-vault-input').forEach(inp => {
+    const v = vaults.find(x=>x.id===inp.dataset.id);
+    if(v) v.balance = parseFloat(inp.value) || 0;
+  });
+  await persistVaults(); closeSheet(); showToast('Saldos atualizados'); renderAll();
+}
+function devOpenDeleteTxns(){
+  if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
+  const recent = [...txns].sort((a,b)=>b.ts-a.ts).slice(0, 40);
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🛠️ Dev — Apagar transações</div>
+    <div class="sheet-sub">Selecione as transações a apagar (últimas 40).</div>
+    <div style="display:flex;flex-direction:column;gap:4px;" id="devTxnList">
+      ${recent.map(t => {
+        const v = vaults.find(x=>x.id===t.vaultId);
+        const d = new Date(t.ts).toLocaleDateString('pt-BR');
+        return `<div class="bill-row" style="cursor:pointer;" onclick="toggleDevTxn(this)">
+          <div class="bill-check dev-txn-check" data-id="${t.id}"></div>
+          <div class="bill-info">
+            <div class="bill-name">${escapeHtml(t.type)} · ${escapeHtml(v?v.name:'?')} · ${fmt(t.amount)}</div>
+            <div class="bill-sub">${d}${t.note?' · '+escapeHtml(t.note):''}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <button class="btn btn-primary danger" onclick="devDeleteSelectedTxns()">Apagar selecionadas</button>
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
+  `);
+}
+function toggleDevTxn(rowEl){
+  const check = rowEl.querySelector('.dev-txn-check');
+  const now = !check.classList.contains('checked');
+  check.classList.toggle('checked', now);
+  check.textContent = now ? '✓' : '';
+}
+async function devDeleteSelectedTxns(){
+  const ids = Array.from(document.querySelectorAll('.dev-txn-check.checked')).map(c=>c.dataset.id);
+  if(ids.length === 0){ showToast('Nenhuma selecionada'); return; }
+  if(!confirm(`Apagar ${ids.length} transação(ões)? Isso não ajusta saldos automaticamente.`)) return;
+  txns = txns.filter(t=>!ids.includes(t.id));
+  await persistTxns(); closeSheet(); showToast(`${ids.length} transação(ões) apagada(s)`); renderAll();
+}
+function devOpenEditLoans(){
+  if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
+  const open = loans.filter(l=>l.remaining>0);
+  if(open.length===0){ showToast('Nenhum empréstimo em aberto'); return; }
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">🛠️ Dev — Editar empréstimos</div>
+    <div class="sheet-sub">Ajuste o valor restante de cada empréstimo em aberto.</div>
+    ${open.map(l => `
+      <div class="field">
+        <label>${escapeHtml(l.note||'Empréstimo')} — ${l.paidInstallments}/${l.installments} parcelas</label>
+        <div class="field-money"><input type="number" class="dev-loan-input" data-id="${l.id}" value="${l.remaining.toFixed(2)}" inputmode="decimal" /></div>
+      </div>`).join('')}
+    <button class="btn btn-primary" onclick="devSaveLoans()">Salvar</button>
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
+  `);
+}
+async function devSaveLoans(){
+  document.querySelectorAll('.dev-loan-input').forEach(inp => {
+    const l = loans.find(x=>x.id===inp.dataset.id);
+    if(l){ l.remaining = Math.max(0, parseFloat(inp.value)||0); if(l.remaining===0) l.paidInstallments=l.installments; }
+  });
+  await persistLoans(); closeSheet(); showToast('Empréstimos atualizados'); renderLoans(); renderAll();
+}
+function devExportData(){
+  if(!localSettings.devMode){ showToast('Ative o Modo Dev primeiro'); return; }
+  const data = JSON.stringify({ vaults, txns, loans, bills, monthData, names }, null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dueto-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
 }
 
 // ---------------------------------------------------------------
@@ -2942,6 +3138,15 @@ async function confirmTransfer(){
     }
   }
   txns.push({ id: uid(), vaultId: v.id, type:'retirada', amount, note: note || `Envio para ${destination === 'conta' ? 'conta corrente' : 'dinheiro'}`, ts: Date.now() });
+  // Fix: When sending back to conta principal, register in month's vaultTransfers so the
+  // amount is "returned" to the free balance in the Mês screen.
+  // UPDATE THIS COMMENT when bumping APP_VERSION below.
+  if(destination === 'conta'){
+    const entry = ensureMonthEntry(currentMonthKey);
+    // Credit back to 'conta' source so it shows as available in Mês
+    entry.vaultTransfers.conta = (entry.vaultTransfers.conta || 0) - amount;
+    await persistMonthData();
+  }
   await persistVaults(); await persistTxns();
   closeSheet(); showToast('Transferência registrada'); renderDetail(); renderAll();
 }
@@ -3141,6 +3346,12 @@ async function confirmPayInstallment(loanId){
       await persistVaults(); await persistTxns();
     }
   } else {
+    // Fix: Loan paid back to conta — credit the conta source in month data so it
+    // appears as available balance in the Mês screen.
+    // UPDATE THIS COMMENT when bumping APP_VERSION below.
+    const entry = ensureMonthEntry(currentMonthKey);
+    entry.vaultTransfers.conta = (entry.vaultTransfers.conta || 0) - amount;
+    await persistMonthData();
     txns.push({ id: uid(), vaultId: loan.vaultId, type:'pagamento', amount, note:`Parcela ${loan.paidInstallments}/${loan.installments} (conta principal)`, who: paymentWho, ts: Date.now(), loanId: loan.id });
     await persistTxns();
   }
@@ -3512,6 +3723,7 @@ function renderBills(entry){
         </div>
         <div class="bill-amount-wrap">
           <div class="bill-amount-edit"><input type="number" class="bill-amount-input" inputmode="decimal" value="${amount}" ${paid?'disabled':''} onchange="updateBillAmount('${b.id}', this.value)" /></div>
+          <div class="bill-delete" onclick="openEditBillSheet('${b.id}')" title="Editar despesa" style="color:var(--vault-2);">✎</div>
           <div class="bill-delete" onclick="deleteBill('${b.id}')">✕</div>
         </div>
       </div>`;
@@ -3606,6 +3818,49 @@ async function createBill(){
   if(!name){ showToast('Dê um nome à conta'); return; }
   bills.push({ id: uid(), name, defaultAmount: amount, kind, targetVaultId, createdMonthKey: currentMonthKey });
   await persistBills(); closeSheet(); showToast('Adicionado com sucesso'); renderMonth();
+}
+
+// Fix 4: Edit existing bill — allows changing name, vault destination, amount and type.
+// UPDATE THIS COMMENT when bumping APP_VERSION below.
+function openEditBillSheet(billId){
+  const b = bills.find(x=>x.id===billId); if(!b) return;
+  pendingEmoji = b.emoji || '';
+  window._pendingBillEditId = billId;
+  window._pendingBillKind = b.kind || 'fixa';
+  openSheet(`
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Editar despesa</div>
+    <div class="sheet-sub">Altere os dados desta conta ou despesa.</div>
+    <div class="field"><label>Nome da despesa</label><input type="text" id="editBillName" value="${escapeHtml(b.name)}" maxlength="30" /></div>
+    <div class="field">
+      <label>Destino do dinheiro (opcional)</label>
+      <select id="editBillTargetVault">
+        <option value="" ${!b.targetVaultId?'selected':''}>Nenhum (Despesa comum externa)</option>
+        ${vaults.map(v => `<option value="${v.id}" ${b.targetVaultId===v.id?'selected':''}>Cofre: ${escapeHtml(v.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field">
+      <label>Tipo</label>
+      <div class="seg" id="editBillKindSeg">
+        <div class="seg-opt ${b.kind!=='variavel'?'active':''}" data-k="fixa" onclick="pickBillKind('fixa')">Fixa</div>
+        <div class="seg-opt ${b.kind==='variavel'?'active':''}" data-k="variavel" onclick="pickBillKind('variavel')">Variável</div>
+      </div>
+    </div>
+    <div class="field"><label>Valor padrão</label><div class="field-money"><input type="number" id="editBillAmount" value="${b.defaultAmount}" inputmode="decimal" /></div></div>
+    <button class="btn btn-primary" onclick="saveEditBill()">Salvar alterações</button>
+    <button class="btn btn-ghost" onclick="closeSheet()">Cancelar</button>
+  `);
+}
+async function saveEditBill(){
+  const billId = window._pendingBillEditId;
+  const b = bills.find(x=>x.id===billId); if(!b) return;
+  const name = document.getElementById('editBillName').value.trim();
+  if(!name){ showToast('Dê um nome à conta'); return; }
+  b.name          = name;
+  b.defaultAmount = parseFloat(document.getElementById('editBillAmount').value) || 0;
+  b.targetVaultId = document.getElementById('editBillTargetVault').value || null;
+  b.kind          = window._pendingBillKind || b.kind;
+  await persistBills(); closeSheet(); showToast('Despesa atualizada'); renderMonth();
 }
 
 function openPayBillSheet(billId){
