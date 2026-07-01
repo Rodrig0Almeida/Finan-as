@@ -2034,7 +2034,7 @@ if (!window.storage) {
 // Exibida em Configurações → Desenvolvedor → "Dueto vX.X.X"
 // Formato: MAJOR.MINOR.PATCH  — ex: 2.1.0 → 2.1.1 (bugfix) ou 2.2.0 (feature)
 // ================================================================
-const APP_VERSION = '2.4.1';  // last updated: 2026-06-25
+const APP_VERSION = '2.4.2';  // last updated: 2026-07-01
 
 // Dev Mode — Force reload bypassing all browser cache so device gets latest version.
 // Shows current version before reloading so the user can see if it changed.
@@ -2253,6 +2253,22 @@ async function loadAll(){
     setSyncStatus('syncing');
     showLoadingState('Buscando dados da nuvem…');
     try{
+      // If a previous session ended (refresh/close) before its debounced push
+      // to the cloud fired, we'd otherwise fetch stale data below and silently
+      // wipe out those local-only changes. Resend the pending payload first.
+      const pendingPush = localStorage.getItem(PENDING_PUSH_KEY);
+      if(pendingPush){
+        try{
+          await fetch(syncUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: pendingPush
+          });
+          localStorage.removeItem(PENDING_PUSH_KEY);
+        }catch(e){
+          console.warn('Falha ao reenviar alterações pendentes da sessão anterior:', e);
+        }
+      }
       const res = await fetch(syncUrl, { method: 'GET' });
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
@@ -2310,33 +2326,62 @@ async function safeSet(key, value){
   }
 }
 
+// Builds the exact payload that gets sent to Google Sheets.
+// localSettings (appearance, incl. showStats) is NEVER included — it's per-device only
+// appSettings sent to cloud contains only shared fields: extraProfiles
+function buildCloudPayload(){
+  const sharedAppSettings = { extraProfiles: appSettings.extraProfiles };
+  return { vaults, txns, loans, bills, monthData, names, appSettings: sharedAppSettings };
+}
+
+const PENDING_PUSH_KEY = 'pendingCloudPush';
+
 // Debounces outgoing pushes so rapid edits collapse into a single request,
 // staying well clear of Apps Script's rate limits.
+//
+// IMPORTANT: we also stash the payload in localStorage *synchronously*, right
+// now — not after the debounce timer fires. If the tab is refreshed/closed
+// during the 2s debounce window, the pending setTimeout is destroyed and the
+// push never happens. Without this marker, the next loadAll() would fetch the
+// (stale) cloud data and silently overwrite the newer local changes — which
+// is exactly what was making new loans/txns "disappear after refresh".
 function scheduleCloudPush(){
   if(!syncUrl){ setSyncStatus('nolink'); return; }
   setSyncStatus('saving');
+  try{ localStorage.setItem(PENDING_PUSH_KEY, JSON.stringify(buildCloudPayload())); }catch(e){}
   clearTimeout(syncPushTimer);
   syncPushTimer = setTimeout(pushToCloud, SYNC_DEBOUNCE_MS);
 }
 
 async function pushToCloud(){
   if(!syncUrl) return;
-  // localSettings (appearance, incl. showStats) is NEVER included — it's per-device only
-  // appSettings sent to cloud contains only shared fields: extraProfiles
-  const sharedAppSettings = { extraProfiles: appSettings.extraProfiles };
-  const payload = { vaults, txns, loans, bills, monthData, names, appSettings: sharedAppSettings };
+  const payload = buildCloudPayload();
   try{
     await fetch(syncUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify(payload)
     });
+    try{ localStorage.removeItem(PENDING_PUSH_KEY); }catch(e){}
     setSyncStatus('synced');
   }catch(err){
     console.warn('Falha ao enviar dados para a nuvem:', err);
+    // Keep PENDING_PUSH_KEY set — we'll retry it on next app load.
     setSyncStatus('nolink');
   }
 }
+
+// Best-effort flush when the tab is being closed/backgrounded: if there's a
+// pending push still waiting on the debounce timer, fire it off via
+// sendBeacon (which survives page unload, unlike a normal fetch).
+window.addEventListener('pagehide', () => {
+  try{
+    const pending = localStorage.getItem(PENDING_PUSH_KEY);
+    if(pending && syncUrl && navigator.sendBeacon){
+      navigator.sendBeacon(syncUrl, new Blob([pending], { type: 'text/plain;charset=utf-8' }));
+    }
+  }catch(e){}
+});
 
 function setSyncStatus(state){
   let label, dotClass;
